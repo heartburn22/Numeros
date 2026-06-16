@@ -9,7 +9,7 @@
   <style>
     body { font-family: system-ui, sans-serif; text-align: center; padding: 15px; background: #f8f9fa; margin: 0; }
     .container { max-width: 420px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    input { font-size: 2em; width: 100%; text-align: center; padding: 18px; border: 2px solid #dadce0; border-radius: 12px; margin: 20px 0; box-sizing: border-box; }
+    input { font-size: 2em; width: 100%; text-align: center; padding: 18px; border: 2px solid #dadce0; border-radius: 12px; margin: 12px 0 20px 0; box-sizing: border-box; }
     button { padding: 15px 24px; font-size: 1.15em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
     .big-btn { padding: 16px 28px; font-size: 1.25em; flex: 1; }
     .buttons { display: flex; gap: 12px; margin: 15px 0; }
@@ -17,8 +17,15 @@
     .history { margin-top: 30px; text-align: left; max-height: 240px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
     .attribution { margin-top: 20px; font-size: 0.8em; color: #666; }
-    .speed-control { margin: 8px 0 15px 0; }
-    .speed-label { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.05em; }
+    
+    .speed-control { margin: 6px 0 12px 0; }
+    .speed-label { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      font-size: 1.05em; 
+      margin-bottom: 4px; 
+    }
   </style>
 </head>
 <body>
@@ -48,7 +55,8 @@
 
       <div class="speed-control">
         <div class="speed-label">
-          Velocidad: <span id="speedValue">1.0x</span>
+          <span>Velocidad</span>
+          <span id="speedValue">1.0x</span>
         </div>
         <input type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1.0" style="width:100%;">
       </div>
@@ -133,7 +141,6 @@
       }
 
       const rate = parseFloat(document.getElementById('speed').value);
-
       responsiveVoice.speak(text, voice, { rate: rate, pitch: 1.0 });
     }
 
@@ -183,7 +190,7 @@
       } else {
         streak = 0;
         document.getElementById('streak').textContent = streak;
-        inputEl.style.color = '#ea4335';   // stays red until next number
+        inputEl.style.color = '#ea4335';
       }
     }
 
@@ -204,7 +211,6 @@
       list.scrollTop = list.scrollHeight;
     }
 
-    // Event listeners
     document.getElementById('rangeSelect').addEventListener('change', () => {
       document.getElementById('customRange').style.display = document.getElementById('rangeSelect').value === 'custom' ? 'block' : 'none';
       newNumber();
@@ -218,7 +224,6 @@
       document.getElementById('speedValue').textContent = this.value + 'x';
     });
 
-    // Clear red color when user starts typing
     document.getElementById('input').addEventListener('input', function() {
       if (this.style.color === 'rgb(234, 67, 53)') {
         this.style.color = '';
