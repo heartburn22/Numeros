@@ -9,7 +9,8 @@
     .container { max-width: 420px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     input { font-size: 1.9em; width: 100%; text-align: center; padding: 16px; border: 2px solid #dadce0; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
     button { padding: 14px 24px; font-size: 1.1em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
-    .big-btn { padding: 16px 28px; font-size: 1.2em; }
+    .big-btn { padding: 16px 28px; font-size: 1.2em; flex: 1; }
+    .buttons { display: flex; gap: 12px; margin: 10px 0; }
     select { padding: 12px; font-size: 1.05em; margin: 8px 0; width: 100%; border-radius: 8px; }
     .history { margin-top: 25px; text-align: left; max-height: 220px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.1em; }
@@ -37,11 +38,11 @@
       <select id="voiceSelect"></select>
     </div>
 
-    <input type="tel" id="input" placeholder="Escribe el número aquí" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
+    <input type="tel" id="input" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
 
-    <div>
-      <button class="big-btn" onclick="speakCurrent()">🔊 Repetir</button>
-      <button class="big-btn" onclick="giveUp()">Mostrar y Siguiente</button>
+    <div class="buttons">
+      <button class="big-btn" onclick="speakCurrent()">Repetir</button>
+      <button class="big-btn" onclick="giveUp()">Mostrar</button>
     </div>
 
     <p>Correctos: <strong id="score">0</strong> | Racha: <strong id="streak">0</strong></p>
@@ -101,6 +102,12 @@
     function loadVoices() {
       voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
       const select = document.getElementById('voiceSelect');
+      
+      if (voices.length === 0) {
+        select.innerHTML = '<option value="">❌ No se encontraron voces en español</option>';
+        return;
+      }
+
       select.innerHTML = '<option value="random">🎲 Voz aleatoria cada vez</option>';
 
       voices.forEach((voice, i) => {
@@ -127,7 +134,7 @@
 
       if (voiceSelect === "random" && voices.length > 0) {
         utterance.voice = voices[Math.floor(Math.random() * voices.length)];
-      } else if (voiceSelect !== "random") {
+      } else if (voiceSelect !== "random" && voiceSelect !== "") {
         utterance.voice = voices[parseInt(voiceSelect)];
       }
 
@@ -159,7 +166,7 @@
 
     function speakCurrent() {
       speak(numeroALetras(currentNumber));
-      setTimeout(() => document.getElementById('input').focus(), 300);  // Return focus after speaking
+      setTimeout(() => document.getElementById('input').focus(), 300);
     }
 
     function checkAnswer() {
