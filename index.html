@@ -3,52 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Números en Español - RHVoice</title>
+  <title>Números en Español</title>
   <style>
     body { font-family: system-ui, sans-serif; text-align: center; padding: 20px; background: #f8f9fa; margin: 0; }
     .container { max-width: 420px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     h1 { margin: 0 0 20px; color: #1a73e8; }
-    .number { font-size: 2.5em; font-weight: bold; margin: 20px 0; min-height: 60px; }
-    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
-    button { padding: 15px; font-size: 1.3em; border: none; border-radius: 12px; background: #f1f3f4; }
-    button:active { background: #e8eaed; }
-    .big-btn { padding: 15px 30px; font-size: 1.2em; margin: 10px; border-radius: 12px; }
-    input { font-size: 1.8em; width: 100%; text-align: center; padding: 15px; border: 2px solid #dadce0; border-radius: 12px; margin: 15px 0; }
-    select { padding: 10px; font-size: 1em; margin: 5px; width: 100%; }
+    .number { font-size: 2.8em; font-weight: bold; margin: 25px 0; min-height: 70px; }
+    input { font-size: 1.9em; width: 100%; text-align: center; padding: 15px; border: 2px solid #dadce0; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
+    button { padding: 14px 24px; font-size: 1.1em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
+    .big-btn { padding: 16px 28px; font-size: 1.2em; }
+    select { padding: 12px; font-size: 1em; margin: 8px 0; width: 100%; border-radius: 8px; }
+    .controls { margin: 15px 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🎧 Números en Español</h1>
-    
-    <div>
-      <button onclick="refreshVoices()">🔄 Actualizar Voces</button>
-      <select id="voiceSelect"></select>
-    </div>
 
     <div class="controls">
-      Rango: <input type="number" id="min" value="0" style="width:80px"> -
-      <input type="number" id="max" value="100" style="width:80px">
-      <button onclick="newNumber()">Nuevo Número</button>
+      <select id="rangeSelect">
+        <option value="0-10">0 - 10</option>
+        <option value="0-100" selected>0 - 100</option>
+        <option value="0-1000">0 - 1,000</option>
+        <option value="0-10000">0 - 10,000</option>
+        <option value="10000-1000000">10,000 - 1,000,000</option>
+        <option value="10000-10000000">10,000 - 10,000,000</option>
+        <option value="10000-1000000000">10,000 - 1,000,000,000</option>
+        <option value="custom">Rango Personalizado</option>
+      </select>
+
+      <div id="customRange" style="display:none; margin-top:8px;">
+        <input type="number" id="min" value="0" style="width:45%"> -
+        <input type="number" id="max" value="100" style="width:45%">
+      </div>
     </div>
+
+    <select id="voiceSelect"></select>
+    <label><input type="checkbox" id="randomVoice" checked> Cambiar voz en cada número</label>
 
     <div class="number" id="display">—</div>
     
-    <input type="tel" id="input" placeholder="Escribe el número" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
-
-    <div class="keypad">
-      <!-- keypad buttons same as before -->
-      <button onclick="appendDigit(1)">1</button><button onclick="appendDigit(2)">2</button><button onclick="appendDigit(3)">3</button>
-      <button onclick="appendDigit(4)">4</button><button onclick="appendDigit(5)">5</button><button onclick="appendDigit(6)">6</button>
-      <button onclick="appendDigit(7)">7</button><button onclick="appendDigit(8)">8</button><button onclick="appendDigit(9)">9</button>
-      <button onclick="appendDigit(0)">0</button>
-      <button onclick="clearInput()">⌫</button>
-      <button onclick="checkAnswer()" style="background:#34a853;color:white">✓</button>
-    </div>
+    <input type="tel" id="input" placeholder="Escribe el número aquí" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
 
     <div>
       <button class="big-btn" onclick="speakCurrent()">🔊 Repetir</button>
       <button class="big-btn" onclick="giveUp()">Mostrar y Siguiente</button>
+      <button class="big-btn" onclick="newNumber()">Nuevo Número</button>
     </div>
 
     <p>Correctos: <strong id="score">0</strong> | Racha: <strong id="streak">0</strong></p>
@@ -61,76 +61,152 @@
     let voices = [];
 
     function numeroALetras(num) {
-      // (same function as before - keeping it short here)
       if (num === 0) return "cero";
-      // ... full function from previous version ...
-      // For brevity I'm omitting the full converter here - use the one from my earlier message
-      return num.toString(); // temporary fallback
+      if (num === 100) return "cien";
+
+      const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+      const teens = ["diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+      const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+      const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+
+      let str = "";
+
+      if (num >= 1000000) {
+        const millones = Math.floor(num / 1000000);
+        str += (millones === 1 ? "un millón" : numeroALetras(millones) + " millones ") + " ";
+        num %= 1000000;
+      }
+      if (num >= 1000) {
+        const miles = Math.floor(num / 1000);
+        if (miles === 1) str += "mil ";
+        else str += numeroALetras(miles) + " mil ";
+        num %= 1000;
+      }
+      if (num >= 100) {
+        const c = Math.floor(num / 100);
+        str += centenas[c] + " ";
+        num %= 100;
+      }
+      if (num >= 20) {
+        const d = Math.floor(num / 10);
+        str += decenas[d];
+        if (num % 10 !== 0) str += " y ";
+        num %= 10;
+      } else if (num >= 10) {
+        str += teens[num - 10] + " ";
+        return str.trim();
+      }
+      if (num > 0) str += unidades[num];
+      return str.trim().replace("veinte y", "veinti");
     }
 
     function loadVoices() {
-      voices = speechSynthesis.getVoices();
+      voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
       const select = document.getElementById('voiceSelect');
-      select.innerHTML = '<option value="">Automático (RHVoice)</option>';
-      
+      select.innerHTML = '';
+
+      if (voices.length === 0) {
+        select.innerHTML = '<option>No se encontraron voces en español</option>';
+        return;
+      }
+
       voices.forEach((voice, i) => {
         const opt = document.createElement('option');
         opt.value = i;
         opt.textContent = `${voice.name} (${voice.lang})`;
-        // Prefer RHVoice or Spanish voices
-        if (voice.name.toLowerCase().includes('rhvoice') || 
-            voice.lang.includes('es') || 
-            voice.lang.includes('MX') || voice.lang.includes('CO')) {
-          opt.selected = true;
-        }
         select.appendChild(opt);
       });
-    }
-
-    function refreshVoices() {
-      speechSynthesis.cancel();
-      loadVoices();
     }
 
     speechSynthesis.onvoiceschanged = loadVoices;
 
     window.onload = () => {
-      // Force load voices
       setTimeout(() => {
         loadVoices();
         newNumber();
-      }, 500);
+      }, 800);
     };
+
+    function getRandomVoice() {
+      return voices.length > 0 ? voices[Math.floor(Math.random() * voices.length)] : null;
+    }
 
     function speak(text) {
       speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       
-      const select = document.getElementById('voiceSelect');
-      if (select.value !== '') {
-        utterance.voice = voices[parseInt(select.value)];
+      const useRandom = document.getElementById('randomVoice').checked;
+      if (useRandom && voices.length > 0) {
+        utterance.voice = getRandomVoice();
+      } else {
+        const select = document.getElementById('voiceSelect');
+        if (select.value) utterance.voice = voices[parseInt(select.value)];
       }
       
-      // Critical: Force Spanish language
-      utterance.lang = 'es-MX';   // or 'es' or 'es-CO'
-      utterance.rate = 0.95;
+      utterance.lang = 'es-MX';
+      utterance.rate = 0.92;
       utterance.pitch = 1.0;
-      
       speechSynthesis.speak(utterance);
     }
 
     function newNumber() {
-      const min = parseInt(document.getElementById('min').value) || 0;
-      const max = parseInt(document.getElementById('max').value) || 100;
+      let min = 0, max = 100;
+      const rangeVal = document.getElementById('rangeSelect').value;
+
+      if (rangeVal === 'custom') {
+        min = parseInt(document.getElementById('min').value) || 0;
+        max = parseInt(document.getElementById('max').value) || 100;
+      } else {
+        const [a, b] = rangeVal.split('-').map(Number);
+        min = a; max = b;
+      }
+
       currentNumber = Math.floor(Math.random() * (max - min + 1)) + min;
       
       document.getElementById('display').textContent = '🎤 Escuchando...';
       document.getElementById('input').value = '';
       speak(numeroALetras(currentNumber));
+      
+      // Auto-focus input
+      setTimeout(() => {
+        document.getElementById('input').focus();
+      }, 600);
     }
 
-    // Rest of the functions (appendDigit, checkAnswer, etc.) same as previous version
-    // ... copy them from the earlier full HTML ...
+    function speakCurrent() {
+      if (currentNumber !== undefined) speak(numeroALetras(currentNumber));
+    }
+
+    function checkAnswer() {
+      const input = parseInt(document.getElementById('input').value);
+      if (isNaN(input)) return;
+
+      if (input === currentNumber) {
+        score++;
+        streak++;
+        document.getElementById('display').innerHTML = `<span style="color:#34a853">${currentNumber}</span>`;
+        document.getElementById('score').textContent = score;
+        document.getElementById('streak').textContent = streak;
+        setTimeout(newNumber, 700);
+      } else {
+        streak = 0;
+        document.getElementById('streak').textContent = streak;
+        document.getElementById('display').style.color = '#ea4335';
+        setTimeout(() => document.getElementById('display').style.color = '', 800);
+      }
+    }
+
+    function giveUp() {
+      document.getElementById('display').innerHTML = `<span style="color:#ea4335">${currentNumber}</span>`;
+      streak = 0;
+      document.getElementById('streak').textContent = streak;
+      setTimeout(newNumber, 1400);
+    }
+
+    // Show/hide custom range
+    document.getElementById('rangeSelect').addEventListener('change', function() {
+      document.getElementById('customRange').style.display = this.value === 'custom' ? 'block' : 'none';
+    });
   </script>
 </body>
 </html>
