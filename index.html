@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Números en Español</title>
   <style>
-    body { font-family: system-ui, sans-serif; text-align: center; padding: 20px; background: #f8f9fa; margin: 0; }
+    body { font-family: system-ui, sans-serif; text-align: center; padding: 15px; background: #f8f9fa; margin: 0; }
     .container { max-width: 420px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    h1 { margin: 0 0 20px; color: #1a73e8; }
-    .number { font-size: 2.8em; font-weight: bold; margin: 25px 0; min-height: 70px; }
-    input { font-size: 1.9em; width: 100%; text-align: center; padding: 15px; border: 2px solid #dadce0; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
+    .number { font-size: 2.8em; font-weight: bold; margin: 20px 0; min-height: 70px; }
+    input { font-size: 1.9em; width: 100%; text-align: center; padding: 16px; border: 2px solid #dadce0; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
     button { padding: 14px 24px; font-size: 1.1em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
     .big-btn { padding: 16px 28px; font-size: 1.2em; }
-    select { padding: 12px; font-size: 1em; margin: 8px 0; width: 100%; border-radius: 8px; }
-    .controls { margin: 15px 0; }
+    select { padding: 12px; font-size: 1.05em; margin: 8px 0; width: 100%; border-radius: 8px; }
+    .history { margin-top: 25px; text-align: left; max-height: 180px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
+    .history-item { padding: 4px 0; border-bottom: 1px solid #eee; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎧 Números en Español</h1>
-
     <div class="controls">
       <select id="rangeSelect">
         <option value="0-10">0 - 10</option>
@@ -32,14 +30,13 @@
         <option value="custom">Rango Personalizado</option>
       </select>
 
-      <div id="customRange" style="display:none; margin-top:8px;">
-        <input type="number" id="min" value="0" style="width:45%"> -
-        <input type="number" id="max" value="100" style="width:45%">
+      <div id="customRange" style="display:none; margin:8px 0;">
+        <input type="number" id="min" value="0" style="width:48%"> -
+        <input type="number" id="max" value="100" style="width:48%">
       </div>
-    </div>
 
-    <select id="voiceSelect"></select>
-    <label><input type="checkbox" id="randomVoice" checked> Cambiar voz en cada número</label>
+      <select id="voiceSelect"></select>
+    </div>
 
     <div class="number" id="display">—</div>
     
@@ -48,10 +45,14 @@
     <div>
       <button class="big-btn" onclick="speakCurrent()">🔊 Repetir</button>
       <button class="big-btn" onclick="giveUp()">Mostrar y Siguiente</button>
-      <button class="big-btn" onclick="newNumber()">Nuevo Número</button>
     </div>
 
     <p>Correctos: <strong id="score">0</strong> | Racha: <strong id="streak">0</strong></p>
+
+    <div class="history">
+      <strong>Historial:</strong>
+      <div id="historyList"></div>
+    </div>
   </div>
 
   <script>
@@ -103,12 +104,7 @@
     function loadVoices() {
       voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
       const select = document.getElementById('voiceSelect');
-      select.innerHTML = '';
-
-      if (voices.length === 0) {
-        select.innerHTML = '<option>No se encontraron voces en español</option>';
-        return;
-      }
+      select.innerHTML = '<option value="random">🎲 Voz aleatoria cada vez</option>';
 
       voices.forEach((voice, i) => {
         const opt = document.createElement('option');
@@ -123,26 +119,21 @@
     window.onload = () => {
       setTimeout(() => {
         loadVoices();
-        newNumber();
+        newNumber();           // Auto-start on load
       }, 800);
     };
-
-    function getRandomVoice() {
-      return voices.length > 0 ? voices[Math.floor(Math.random() * voices.length)] : null;
-    }
 
     function speak(text) {
       speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      
-      const useRandom = document.getElementById('randomVoice').checked;
-      if (useRandom && voices.length > 0) {
-        utterance.voice = getRandomVoice();
-      } else {
-        const select = document.getElementById('voiceSelect');
-        if (select.value) utterance.voice = voices[parseInt(select.value)];
+      const voiceSelect = document.getElementById('voiceSelect').value;
+
+      if (voiceSelect === "random" && voices.length > 0) {
+        utterance.voice = voices[Math.floor(Math.random() * voices.length)];
+      } else if (voiceSelect !== "random") {
+        utterance.voice = voices[parseInt(voiceSelect)];
       }
-      
+
       utterance.lang = 'es-MX';
       utterance.rate = 0.92;
       utterance.pitch = 1.0;
@@ -163,18 +154,15 @@
 
       currentNumber = Math.floor(Math.random() * (max - min + 1)) + min;
       
-      document.getElementById('display').textContent = '🎤 Escuchando...';
+      document.getElementById('display').textContent = '—';
       document.getElementById('input').value = '';
       speak(numeroALetras(currentNumber));
       
-      // Auto-focus input
-      setTimeout(() => {
-        document.getElementById('input').focus();
-      }, 600);
+      setTimeout(() => document.getElementById('input').focus(), 500);
     }
 
     function speakCurrent() {
-      if (currentNumber !== undefined) speak(numeroALetras(currentNumber));
+      speak(numeroALetras(currentNumber));
     }
 
     function checkAnswer() {
@@ -184,29 +172,50 @@
       if (input === currentNumber) {
         score++;
         streak++;
-        document.getElementById('display').innerHTML = `<span style="color:#34a853">${currentNumber}</span>`;
+        showResult(currentNumber, true);
         document.getElementById('score').textContent = score;
         document.getElementById('streak').textContent = streak;
-        setTimeout(newNumber, 700);
+        setTimeout(newNumber, 800);
       } else {
         streak = 0;
         document.getElementById('streak').textContent = streak;
         document.getElementById('display').style.color = '#ea4335';
-        setTimeout(() => document.getElementById('display').style.color = '', 800);
+        setTimeout(() => document.getElementById('display').style.color = '', 600);
       }
     }
 
     function giveUp() {
-      document.getElementById('display').innerHTML = `<span style="color:#ea4335">${currentNumber}</span>`;
+      showResult(currentNumber, false);
       streak = 0;
       document.getElementById('streak').textContent = streak;
-      setTimeout(newNumber, 1400);
+      setTimeout(newNumber, 1200);
     }
 
-    // Show/hide custom range
-    document.getElementById('rangeSelect').addEventListener('change', function() {
-      document.getElementById('customRange').style.display = this.value === 'custom' ? 'block' : 'none';
+    function showResult(num, isCorrect) {
+      const color = isCorrect ? '#34a853' : '#ea4335';
+      document.getElementById('display').innerHTML = `<span style="color:${color}">${num}</span>`;
+      
+      // Add to history
+      const list = document.getElementById('historyList');
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `<span style="color:${color}">${num}</span>`;
+      list.appendChild(item);
+      list.scrollTop = list.scrollHeight;
+    }
+
+    // Range & Voice change handlers
+    document.getElementById('rangeSelect').addEventListener('change', () => {
+      const custom = document.getElementById('customRange');
+      custom.style.display = document.getElementById('rangeSelect').value === 'custom' ? 'block' : 'none';
+      newNumber();
     });
+
+    document.getElementById('voiceSelect').addEventListener('change', newNumber);
+
+    // Custom range inputs also trigger new number when changed
+    document.getElementById('min').addEventListener('change', newNumber);
+    document.getElementById('max').addEventListener('change', newNumber);
   </script>
 </body>
 </html>
