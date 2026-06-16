@@ -16,16 +16,13 @@
     select { padding: 12px; font-size: 1.05em; margin: 8px 0; width: 100%; border-radius: 8px; }
     .history { margin-top: 30px; text-align: left; max-height: 240px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
-    .attribution { margin-top: 20px; font-size: 0.8em; color: #666; }
+    .attribution { display: none; margin-top: 20px; font-size: 0.8em; color: #666; }
     
-/*
-    .speed-control { margin: 6px 0 12px 0; }
-*/
     .speed-control {
-        margin-top: 0;
+        margin-top: 12px;
         margin-bottom: 0;
         padding-top: 0;
-        padding-bottom: 0;
+        padding-bottom: 12px;
     }
     .speed-input {
         margin-top: 0;
@@ -42,7 +39,7 @@
         margin-bottom: 0;
         padding-top: 0;
         padding-bottom: 0;
-        color:green;
+        color:red;
     }
 
   </style>
@@ -52,9 +49,9 @@
     <div class="controls">
       <select id="rangeSelect">
         <option value="0-10">0 - 10</option>
-        <option value="0-100" selected>0 - 100</option>
+        <option value="0-100">0 - 100</option>
         <option value="0-1000">0 - 1,000</option>
-        <option value="0-10000">0 - 10,000</option>
+        <option value="0-10000" selected>0 - 10,000</option>
         <option value="10000-1000000">10,000 - 1,000,000</option>
         <option value="10000-10000000">10,000 - 10,000,000</option>
         <option value="10000-1000000000">10,000 - 1,000,000,000</option>
@@ -67,7 +64,7 @@
       </div>
 
       <select id="voiceSelect">
-        <option value="random" selected>🎲 Voz aleatoria cada vez</option>
+        <option value="random" selected>🎲 Voz aleatoria</option>
         <option value="Spanish Female">🇲🇽 Spanish Female</option>
         <option value="Spanish Male">🇲🇽 Spanish Male</option>
       </select>
