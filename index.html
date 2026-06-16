@@ -17,7 +17,8 @@
     .history { margin-top: 30px; text-align: left; max-height: 240px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
     .attribution { margin-top: 20px; font-size: 0.8em; color: #666; }
-    .speed-control { margin: 10px 0; }
+    .speed-control { margin: 8px 0 15px 0; }
+    .speed-label { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.05em; }
   </style>
 </head>
 <body>
@@ -46,8 +47,10 @@
       </select>
 
       <div class="speed-control">
-        Velocidad: <input type="range" id="speed" min="0.6" max="1.4" step="0.05" value="0.92">
-        <span id="speedValue">0.92x</span>
+        <div class="speed-label">
+          Velocidad: <span id="speedValue">1.0x</span>
+        </div>
+        <input type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1.0" style="width:100%;">
       </div>
     </div>
 
@@ -75,7 +78,7 @@
     let score = 0;
     let streak = 0;
 
-    function numeroALetras(num) { /* Same excellent number converter as before */ 
+    function numeroALetras(num) {
       if (num === 0) return "cero";
       if (num === 100) return "cien";
 
@@ -123,7 +126,6 @@
 
       const voiceSelect = document.getElementById('voiceSelect').value;
       let voice = "Spanish Female";
-
       if (voiceSelect === "random") {
         voice = Math.random() > 0.5 ? "Spanish Female" : "Spanish Male";
       } else if (voiceSelect) {
@@ -132,10 +134,7 @@
 
       const rate = parseFloat(document.getElementById('speed').value);
 
-      responsiveVoice.speak(text, voice, {
-        rate: rate,
-        pitch: 1.0
-      });
+      responsiveVoice.speak(text, voice, { rate: rate, pitch: 1.0 });
     }
 
     function newNumber() {
@@ -152,15 +151,19 @@
 
       currentNumber = Math.floor(Math.random() * (max - min + 1)) + min;
       
-      document.getElementById('input').value = '';
-      document.getElementById('input').style.color = ''; // reset color
+      resetInput();
       speak(numeroALetras(currentNumber));
       setTimeout(() => document.getElementById('input').focus(), 500);
     }
 
+    function resetInput() {
+      const input = document.getElementById('input');
+      input.value = '';
+      input.style.color = '';
+    }
+
     function speakCurrent() {
-      document.getElementById('input').value = '';
-      document.getElementById('input').style.color = '';
+      resetInput();
       speak(numeroALetras(currentNumber));
       setTimeout(() => document.getElementById('input').focus(), 300);
     }
@@ -180,8 +183,7 @@
       } else {
         streak = 0;
         document.getElementById('streak').textContent = streak;
-        inputEl.style.color = '#ea4335';   // Turn red on wrong answer
-        setTimeout(() => inputEl.style.color = '', 1200);
+        inputEl.style.color = '#ea4335';   // stays red until next number
       }
     }
 
@@ -212,9 +214,15 @@
     document.getElementById('min').addEventListener('change', newNumber);
     document.getElementById('max').addEventListener('change', newNumber);
 
-    // Update speed display
     document.getElementById('speed').addEventListener('input', function() {
       document.getElementById('speedValue').textContent = this.value + 'x';
+    });
+
+    // Clear red color when user starts typing
+    document.getElementById('input').addEventListener('input', function() {
+      if (this.style.color === 'rgb(234, 67, 53)') {
+        this.style.color = '';
+      }
     });
 
     window.onload = () => {
