@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Números en Español</title>
+  <!-- ResponsiveVoice -->
+  <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+  
   <style>
     body { font-family: system-ui, sans-serif; text-align: center; padding: 15px; background: #f8f9fa; margin: 0; }
     .container { max-width: 420px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
@@ -14,6 +17,7 @@
     select { padding: 12px; font-size: 1.05em; margin: 8px 0; width: 100%; border-radius: 8px; }
     .history { margin-top: 30px; text-align: left; max-height: 240px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
+    .attribution { margin-top: 20px; font-size: 0.8em; color: #666; }
   </style>
 </head>
 <body>
@@ -21,9 +25,9 @@
     <div class="controls">
       <select id="rangeSelect">
         <option value="0-10">0 - 10</option>
-        <option value="0-100">0 - 100</option>
+        <option value="0-100" selected>0 - 100</option>
         <option value="0-1000">0 - 1,000</option>
-        <option value="0-10000" selected>0 - 10,000</option>
+        <option value="0-10000">0 - 10,000</option>
         <option value="10000-1000000">10,000 - 1,000,000</option>
         <option value="10000-10000000">10,000 - 10,000,000</option>
         <option value="10000-1000000000">10,000 - 1,000,000,000</option>
@@ -35,7 +39,11 @@
         <input type="number" id="max" value="100" style="width:48%">
       </div>
 
-      <select id="voiceSelect"></select>
+      <select id="voiceSelect">
+        <option value="Spanish Female">🇲🇽 Spanish Female</option>
+        <option value="Spanish Male">🇲🇽 Spanish Male</option>
+        <option value="random">🎲 Voz aleatoria cada vez</option>
+      </select>
     </div>
 
     <input type="tel" id="input" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
@@ -51,13 +59,16 @@
       <strong>Historial:</strong>
       <div id="historyList"></div>
     </div>
+
+    <div class="attribution">
+      Powered by <a href="https://responsivevoice.org/" target="_blank">ResponsiveVoice</a> (Non-Commercial)
+    </div>
   </div>
 
   <script>
     let currentNumber = 0;
     let score = 0;
     let streak = 0;
-    let voices = [];
 
     function numeroALetras(num) {
       if (num === 0) return "cero";
@@ -99,49 +110,25 @@
       return str.trim().replace("veinte y", "veinti");
     }
 
-    function loadVoices() {
-      voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
-      const select = document.getElementById('voiceSelect');
-      
-      if (voices.length === 0) {
-        select.innerHTML = '<option value="">❌ No se encontraron voces en español</option>';
+    function speak(text) {
+      if (typeof responsiveVoice === "undefined") {
+        alert("ResponsiveVoice no se cargó. Verifica tu conexión a internet.");
         return;
       }
 
-      select.innerHTML = '<option value="random">🎲 Voz aleatoria cada vez</option>';
-
-      voices.forEach((voice, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `${voice.name} (${voice.lang})`;
-        select.appendChild(opt);
-      });
-    }
-
-    speechSynthesis.onvoiceschanged = loadVoices;
-
-    window.onload = () => {
-      setTimeout(() => {
-        loadVoices();
-        newNumber();        // This now reliably speaks on load
-      }, 1200);             // Slightly longer delay for voice loading
-    };
-
-    function speak(text) {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
       const voiceSelect = document.getElementById('voiceSelect').value;
+      let voice = "Spanish Female";
 
-      if (voiceSelect === "random" && voices.length > 0) {
-        utterance.voice = voices[Math.floor(Math.random() * voices.length)];
-      } else if (voiceSelect !== "random" && voiceSelect !== "") {
-        utterance.voice = voices[parseInt(voiceSelect)];
+      if (voiceSelect === "random") {
+        voice = Math.random() > 0.5 ? "Spanish Female" : "Spanish Male";
+      } else if (voiceSelect) {
+        voice = voiceSelect;
       }
 
-      utterance.lang = 'es-MX';
-      utterance.rate = 0.92;
-      utterance.pitch = 1.0;
-      speechSynthesis.speak(utterance);
+      responsiveVoice.speak(text, voice, {
+        rate: 0.92,
+        pitch: 1.0
+      });
     }
 
     function newNumber() {
@@ -164,7 +151,7 @@
     }
 
     function speakCurrent() {
-      document.getElementById('input').value = '';     // Clear input when repeating
+      document.getElementById('input').value = '';
       speak(numeroALetras(currentNumber));
       setTimeout(() => document.getElementById('input').focus(), 300);
     }
@@ -203,6 +190,7 @@
       list.scrollTop = list.scrollHeight;
     }
 
+    // Event listeners
     document.getElementById('rangeSelect').addEventListener('change', () => {
       document.getElementById('customRange').style.display = document.getElementById('rangeSelect').value === 'custom' ? 'block' : 'none';
       newNumber();
@@ -211,6 +199,11 @@
     document.getElementById('voiceSelect').addEventListener('change', newNumber);
     document.getElementById('min').addEventListener('change', newNumber);
     document.getElementById('max').addEventListener('change', newNumber);
+
+    // Start on load
+    window.onload = () => {
+      setTimeout(newNumber, 800);
+    };
   </script>
 </body>
 </html>
