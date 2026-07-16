@@ -13,11 +13,12 @@
     button { padding: 15px 24px; font-size: 1.15em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
     .big-btn { padding: 16px 28px; font-size: 1.25em; flex: 1; }
     .buttons { display: flex; gap: 12px; margin: 15px 0; }
+    select { padding: 12px; font-size: 1.05em; margin: 8px 0; width: 100%; border-radius: 8px; }
     .history { margin-top: 30px; text-align: left; max-height: 240px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
     .attribution { display: none; margin-top: 20px; font-size: 0.8em; color: #666; }
 
-    /* Settings Panel */
+    /* Settings */
     .settings-btn { position: absolute; top: 15px; right: 15px; font-size: 1.6em; background: none; border: none; cursor: pointer; padding: 8px; }
     .settings-panel {
       position: fixed; top: 0; right: -100%; width: 85%; max-width: 360px; height: 100%; background: white;
@@ -26,6 +27,16 @@
     .settings-panel.open { right: 0; }
     .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .close-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; }
+
+    .speed-control { margin-top: 12px; margin-bottom: 0; padding-top: 0; padding-bottom: 12px; }
+    .speed-input { margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+    .speed-label { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        font-size: 1.05em; 
+        margin-top: 0; margin-bottom: 4px; 
+    }
   </style>
 </head>
 <body>
@@ -69,7 +80,7 @@
       <option value="custom">Rango Personalizado</option>
     </select>
 
-    <div id="customRange" style="display:none; margin:12px 0;">
+    <div id="customRange" style="display:none; margin:8px 0;">
       <input type="number" id="min" value="0" style="width:48%"> -
       <input type="number" id="max" value="100" style="width:48%">
     </div>
@@ -250,7 +261,37 @@
       <h2>Configuración</h2>
       <button class="close-btn" onclick="toggleSettings()">✕</button>
     </div>
-    <!-- The three controls are already in the panel via the HTML structure -->
+
+    <!-- Controls moved here with your original styling -->
+    <select id="rangeSelect">
+      <option value="0-10">0 - 10</option>
+      <option value="0-100">0 - 100</option>
+      <option value="0-1000">0 - 1,000</option>
+      <option value="0-10000" selected>0 - 10,000</option>
+      <option value="10000-1000000">10,000 - 1,000,000</option>
+      <option value="10000-10000000">10,000 - 10,000,000</option>
+      <option value="10000-1000000000">10,000 - 1,000,000,000</option>
+      <option value="custom">Rango Personalizado</option>
+    </select>
+
+    <div id="customRange" style="display:none; margin:8px 0;">
+      <input type="number" id="min" value="0" style="width:48%"> -
+      <input type="number" id="max" value="100" style="width:48%">
+    </div>
+
+    <select id="voiceSelect">
+      <option value="random" selected>🎲 Voz aleatoria</option>
+      <option value="Spanish Female">🇲🇽 Voz femenina</option>
+      <option value="Spanish Male">🇲🇽 Voz masculina</option>
+    </select>
+
+    <div class="speed-control">
+      <div class="speed-label">
+        <span>Velocidad</span>
+        <span id="speedValue">1.0x</span>
+      </div>
+      <input class="speed-input" type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1.0" style="width:100%;">
+    </div>
   </div>
 </body>
 </html>
