@@ -9,6 +9,18 @@
   <style>
     body { font-family: system-ui, sans-serif; text-align: center; padding: 15px; background: #f8f9fa; margin: 0; }
     .container { max-width: 420px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; }
+    
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .title { font-size: 1.6em; font-weight: bold; color: #1a73e8; margin: 0; }
+
     input { font-size: 2em; width: 100%; text-align: center; padding: 18px; border: 2px solid #dadce0; border-radius: 12px; margin: 12px 0 20px 0; box-sizing: border-box; }
     button { padding: 15px 24px; font-size: 1.15em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
     .big-btn { padding: 16px 28px; font-size: 1.25em; flex: 1; }
@@ -19,7 +31,7 @@
     .attribution { display: none; margin-top: 20px; font-size: 0.8em; color: #666; }
 
     /* Settings */
-    .settings-btn { position: absolute; top: 15px; right: 15px; font-size: 1.6em; background: none; border: none; cursor: pointer; padding: 8px; }
+    .settings-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; padding: 8px; }
     .settings-panel {
       position: fixed; top: 0; right: -100%; width: 85%; max-width: 360px; height: 100%; background: white;
       box-shadow: -4px 0 15px rgba(0,0,0,0.2); transition: right 0.4s ease; padding: 20px; overflow-y: auto; z-index: 1000;
@@ -27,21 +39,15 @@
     .settings-panel.open { right: 0; }
     .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .close-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; }
-
-    .speed-control { margin-top: 12px; margin-bottom: 0; padding-top: 0; padding-bottom: 12px; }
-    .speed-input { margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
-    .speed-label { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        font-size: 1.05em; 
-        margin-top: 0; margin-bottom: 4px; 
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <button class="settings-btn" onclick="toggleSettings()">⚙</button>
+    <!-- Header -->
+    <div class="header">
+      <h1 class="title">Números</h1>
+      <button class="settings-btn" onclick="toggleSettings()">⚙</button>
+    </div>
 
     <input type="tel" id="input" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
 
@@ -262,7 +268,6 @@
       <button class="close-btn" onclick="toggleSettings()">✕</button>
     </div>
 
-    <!-- Controls moved here with your original styling -->
     <select id="rangeSelect">
       <option value="0-10">0 - 10</option>
       <option value="0-100">0 - 100</option>
