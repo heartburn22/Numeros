@@ -20,7 +20,6 @@
     .stats { margin: 10px 0; font-size: 1.1em; }
     .history { flex: 1; margin-top: 10px; text-align: left; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; min-height: 0; }
     .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
-    .attribution { display: none; margin-top: 10px; font-size: 0.8em; color: #666; }
 
     .settings-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; padding: 8px; }
     .settings-panel { position: fixed; top: 0; right: -100%; width: 85%; max-width: 360px; height: 100%; background: white; box-shadow: -4px 0 15px rgba(0,0,0,0.2); transition: right 0.4s ease; padding: 20px; overflow-y: auto; z-index: 1000; }
@@ -78,7 +77,7 @@
       <option value="custom">Rango Personalizado</option>
     </select>
 
-    <div id="customRange" style="display:none; margin:8px 0;">
+    <div id="customRange" style="display:none; margin:12px 0;">
       <input type="number" id="min" value="0" style="width:48%"> -
       <input type="number" id="max" value="100" style="width:48%">
     </div>
@@ -166,6 +165,7 @@
     function newNumber() {
       let min = 0, max = 100;
       const rangeVal = document.getElementById('rangeSelect').value;
+
       if (rangeVal === 'custom') {
         min = parseInt(document.getElementById('min').value) || 0;
         max = parseInt(document.getElementById('max').value) || 100;
@@ -173,7 +173,9 @@
         const [a, b] = rangeVal.split('-').map(Number);
         min = a; max = b;
       }
+
       currentNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+      
       resetInput();
       speak(numeroALetras(currentNumber));
       setTimeout(() => document.getElementById('input').focus(), 500);
@@ -212,7 +214,7 @@
         document.getElementById('streak').textContent = streak;
         showResult(input, false);
         playIncorrectSound();
-        setTimeout(speakCurrent, 700);   // Auto repeat
+        setTimeout(speakCurrent, 700);
       }
     }
 
@@ -229,23 +231,34 @@
       const item = document.createElement('div');
       item.className = 'history-item';
       item.innerHTML = `<span style="color:${color}">${num}</span>`;
-      list.insertBefore(item, list.firstChild); // newest on top
+      list.insertBefore(item, list.firstChild);
     }
 
     function toggleSettings() {
       document.getElementById('settingsPanel').classList.toggle('open');
     }
 
-    // Save settings
+    // Save / Load settings
     function saveSettings() {
       localStorage.setItem('rangeSelect', document.getElementById('rangeSelect').value);
       localStorage.setItem('voiceSelect', document.getElementById('voiceSelect').value);
       localStorage.setItem('speed', document.getElementById('speed').value);
+      if (document.getElementById('rangeSelect').value === 'custom') {
+        localStorage.setItem('customMin', document.getElementById('min').value);
+        localStorage.setItem('customMax', document.getElementById('max').value);
+      }
     }
 
     window.onload = () => {
-      // Load saved settings
-      if (localStorage.getItem('rangeSelect')) document.getElementById('rangeSelect').value = localStorage.getItem('rangeSelect');
+      // Load settings
+      if (localStorage.getItem('rangeSelect')) {
+        document.getElementById('rangeSelect').value = localStorage.getItem('rangeSelect');
+        if (localStorage.getItem('rangeSelect') === 'custom') {
+          document.getElementById('customRange').style.display = 'block';
+          if (localStorage.getItem('customMin')) document.getElementById('min').value = localStorage.getItem('customMin');
+          if (localStorage.getItem('customMax')) document.getElementById('max').value = localStorage.getItem('customMax');
+        }
+      }
       if (localStorage.getItem('voiceSelect')) document.getElementById('voiceSelect').value = localStorage.getItem('voiceSelect');
       if (localStorage.getItem('speed')) {
         const s = localStorage.getItem('speed');
@@ -253,51 +266,21 @@
         document.getElementById('speedValue').textContent = s + 'x';
       }
 
-      ['rangeSelect','voiceSelect','speed'].forEach(id => {
-        document.getElementById(id).addEventListener('change', saveSettings);
+      // Event listeners
+      document.getElementById('rangeSelect').addEventListener('change', () => {
+        const isCustom = document.getElementById('rangeSelect').value === 'custom';
+        document.getElementById('customRange').style.display = isCustom ? 'block' : 'none';
+        saveSettings();
+        newNumber();
+      });
+
+      ['voiceSelect','speed','min','max'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', saveSettings);
       });
 
       setTimeout(newNumber, 800);
     };
   </script>
-
-  <!-- Settings Panel -->
-  <div id="settingsPanel" class="settings-panel">
-    <div class="settings-header">
-      <h2>Configuración</h2>
-      <button class="close-btn" onclick="toggleSettings()">✕</button>
-    </div>
-
-    <select id="rangeSelect">
-      <option value="0-10">0 - 10</option>
-      <option value="0-100">0 - 100</option>
-      <option value="0-1000">0 - 1,000</option>
-      <option value="0-10000" selected>0 - 10,000</option>
-      <option value="10000-100000">10,000 - 100,000</option>
-      <option value="10000-1000000">10,000 - 1,000,000</option>
-      <option value="10000-10000000">10,000 - 10,000,000</option>
-      <option value="10000-1000000000">10,000 - 1,000,000,000</option>
-      <option value="custom">Rango Personalizado</option>
-    </select>
-
-    <div id="customRange" style="display:none; margin:8px 0;">
-      <input type="number" id="min" value="0" style="width:48%"> -
-      <input type="number" id="max" value="100" style="width:48%">
-    </div>
-
-    <select id="voiceSelect">
-      <option value="random" selected>🎲 Voz aleatoria</option>
-      <option value="Spanish Female">🇲🇽 Voz femenina</option>
-      <option value="Spanish Male">🇲🇽 Voz masculina</option>
-    </select>
-
-    <div class="speed-control">
-      <div class="speed-label">
-        <span>Velocidad</span>
-        <span id="speedValue">1.0x</span>
-      </div>
-      <input class="speed-input" type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1.0" style="width:100%;">
-    </div>
-  </div>
 </body>
 </html>
