@@ -77,7 +77,7 @@
       <option value="custom">Rango Personalizado</option>
     </select>
 
-    <div id="customRange" style="display:none; margin:12px 0;">
+    <div id="customRange" style="display:none; margin:8px 0;">
       <input type="number" id="min" value="0" style="width:48%"> -
       <input type="number" id="max" value="100" style="width:48%">
     </div>
@@ -238,25 +238,20 @@
       document.getElementById('settingsPanel').classList.toggle('open');
     }
 
-    // Save / Load settings
+    // Save settings
     function saveSettings() {
       localStorage.setItem('rangeSelect', document.getElementById('rangeSelect').value);
       localStorage.setItem('voiceSelect', document.getElementById('voiceSelect').value);
       localStorage.setItem('speed', document.getElementById('speed').value);
-      if (document.getElementById('rangeSelect').value === 'custom') {
-        localStorage.setItem('customMin', document.getElementById('min').value);
-        localStorage.setItem('customMax', document.getElementById('max').value);
-      }
     }
 
     window.onload = () => {
       // Load settings
       if (localStorage.getItem('rangeSelect')) {
-        document.getElementById('rangeSelect').value = localStorage.getItem('rangeSelect');
-        if (localStorage.getItem('rangeSelect') === 'custom') {
+        const savedRange = localStorage.getItem('rangeSelect');
+        document.getElementById('rangeSelect').value = savedRange;
+        if (savedRange === 'custom') {
           document.getElementById('customRange').style.display = 'block';
-          if (localStorage.getItem('customMin')) document.getElementById('min').value = localStorage.getItem('customMin');
-          if (localStorage.getItem('customMax')) document.getElementById('max').value = localStorage.getItem('customMax');
         }
       }
       if (localStorage.getItem('voiceSelect')) document.getElementById('voiceSelect').value = localStorage.getItem('voiceSelect');
@@ -274,9 +269,17 @@
         newNumber();
       });
 
-      ['voiceSelect','speed','min','max'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('change', saveSettings);
+      document.getElementById('voiceSelect').addEventListener('change', () => { saveSettings(); newNumber(); });
+      document.getElementById('speed').addEventListener('input', function() {
+        document.getElementById('speedValue').textContent = this.value + 'x';
+        saveSettings();
+      });
+
+      ['min','max'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          saveSettings();
+          newNumber();
+        });
       });
 
       setTimeout(newNumber, 800);
