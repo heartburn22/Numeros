@@ -27,6 +27,10 @@
     .settings-panel.open { right: 0; }
     .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .close-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; }
+
+    .speed-control { margin-top: 12px; margin-bottom: 0; padding-top: 0; padding-bottom: 12px; }
+    .speed-input { margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+    .speed-label { display: flex; justify-content: space-between; align-items: center; font-size: 1.05em; margin-top: 0; margin-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -103,24 +107,36 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playCorrectSound() {
-      const oscillator = audioCtx.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-      oscillator.connect(audioCtx.destination);
-      oscillator.start();
-      setTimeout(() => oscillator.stop(), 150);
+      const notes = [700, 900, 1100];
+      let time = audioCtx.currentTime;
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.25, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + 0.45);
+        time += 0.13;
+      });
     }
 
     function playIncorrectSound() {
-      const oscillator = audioCtx.createOscillator();
-      oscillator.type = 'sawtooth';
-      oscillator.frequency.setValueAtTime(250, audioCtx.currentTime);
-      oscillator.connect(audioCtx.destination);
-      oscillator.start();
-      setTimeout(() => oscillator.stop(), 300);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(420, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
     }
 
-    function numeroALetras(num) { /* your full function */ 
+    function numeroALetras(num) {
       if (num === 0) return "cero";
       if (num === 100) return "cien";
       const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
@@ -196,7 +212,7 @@
         document.getElementById('streak').textContent = streak;
         showResult(input, false);
         playIncorrectSound();
-        setTimeout(speakCurrent, 600);   // Auto-repeat on wrong
+        setTimeout(speakCurrent, 700);   // Auto repeat
       }
     }
 
@@ -213,14 +229,14 @@
       const item = document.createElement('div');
       item.className = 'history-item';
       item.innerHTML = `<span style="color:${color}">${num}</span>`;
-      list.insertBefore(item, list.firstChild); // Newest on top
+      list.insertBefore(item, list.firstChild); // newest on top
     }
 
     function toggleSettings() {
       document.getElementById('settingsPanel').classList.toggle('open');
     }
 
-    // Save / Load settings
+    // Save settings
     function saveSettings() {
       localStorage.setItem('rangeSelect', document.getElementById('rangeSelect').value);
       localStorage.setItem('voiceSelect', document.getElementById('voiceSelect').value);
@@ -228,6 +244,7 @@
     }
 
     window.onload = () => {
+      // Load saved settings
       if (localStorage.getItem('rangeSelect')) document.getElementById('rangeSelect').value = localStorage.getItem('rangeSelect');
       if (localStorage.getItem('voiceSelect')) document.getElementById('voiceSelect').value = localStorage.getItem('voiceSelect');
       if (localStorage.getItem('speed')) {
@@ -236,7 +253,6 @@
         document.getElementById('speedValue').textContent = s + 'x';
       }
 
-      // Event listeners for saving
       ['rangeSelect','voiceSelect','speed'].forEach(id => {
         document.getElementById(id).addEventListener('change', saveSettings);
       });
@@ -244,7 +260,6 @@
       setTimeout(newNumber, 800);
     };
   </script>
-
 
   <!-- Settings Panel -->
   <div id="settingsPanel" class="settings-panel">
@@ -258,6 +273,7 @@
       <option value="0-100">0 - 100</option>
       <option value="0-1000">0 - 1,000</option>
       <option value="0-10000" selected>0 - 10,000</option>
+      <option value="10000-100000">10,000 - 100,000</option>
       <option value="10000-1000000">10,000 - 1,000,000</option>
       <option value="10000-10000000">10,000 - 10,000,000</option>
       <option value="10000-1000000000">10,000 - 1,000,000,000</option>
@@ -283,7 +299,5 @@
       <input class="speed-input" type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1.0" style="width:100%;">
     </div>
   </div>
-
-
 </body>
 </html>
