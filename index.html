@@ -310,14 +310,6 @@
   </script>
 
   <script>
-    self.addEventListener("install", () => {
-        self.skipWaiting();
-    });
-
-    self.addEventListener("fetch", event => {
-        event.respondWith(fetch(event.request));
-    });
-
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("sw.js");
     }
