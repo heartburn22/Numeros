@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Números en Español</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a73e8">
+
   <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
   
   <style>
@@ -303,6 +307,20 @@
 
       setTimeout(newNumber, 800);
     };
+  </script>
+
+  <script>
+    self.addEventListener("install", () => {
+        self.skipWaiting();
+    });
+
+    self.addEventListener("fetch", event => {
+        event.respondWith(fetch(event.request));
+    });
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js");
+    }
   </script>
 </body>
 </html>
