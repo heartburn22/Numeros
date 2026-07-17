@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>数字 - 日本語</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a73e8">
+
+  <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+  
+  <style>
+    body { font-family: system-ui, sans-serif; text-align: center; padding: 15px; background: #f8f9fa; margin: 0; }
+    .container { 
+        max-width: 420px; 
+        margin: 0 auto; 
+        background: white; 
+        border-radius: 16px; 
+        padding: 20px; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+        position: relative; 
+        display: flex; 
+        flex-direction: column; 
+        height: 90vh;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+    .title { font-size: 1.6em; font-weight: bold; color: #1a73e8; margin: 0; }
+
+    input { font-size: 2em; width: 100%; text-align: center; padding: 18px; border: 2px solid #dadce0; border-radius: 12px; margin: 12px 0 20px 0; box-sizing: border-box; }
+    button { padding: 15px 24px; font-size: 1.15em; margin: 8px; border: none; border-radius: 12px; background: #f1f3f4; }
+    .big-btn { padding: 16px 28px; font-size: 1.25em; flex: 1; }
+    .buttons { display: flex; gap: 12px; margin: 15px 0; }
+    select { padding: 12px; font-size: 1.05em; margin: 8px 0; width: 100%; border-radius: 8px; }
+    .stats { margin: 10px 0; font-size: 1.1em; }
+    .history { flex: 1; margin-top: 10px; text-align: left; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 10px; min-height: 0; }
+    .history-item { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 1.15em; }
+
+    .settings-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; padding: 8px; }
+    .settings-panel { position: fixed; top: 0; right: -100%; width: 85%; max-width: 360px; height: 100%; background: white; box-shadow: -4px 0 15px rgba(0,0,0,0.2); transition: right 0.4s ease; padding: 20px; overflow-y: auto; z-index: 1000; }
+    .settings-panel.open { right: 0; }
+    .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; }
+
+    .speed-control { margin-top: 12px; margin-bottom: 0; padding-top: 0; padding-bottom: 12px; }
+    .speed-input { margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+    .speed-label { display: flex; justify-content: space-between; align-items: center; font-size: 1.05em; margin-top: 0; margin-bottom: 4px; }
+    .attribution { font-size: 11px; color: #888; margin-top: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">数字</h1>
+      <button class="settings-btn" onclick="toggleSettings()">⚙</button>
+    </div>
+
+    <input type="tel" id="input" autocomplete="off" onkeypress="if(event.key==='Enter') checkAnswer()">
+
+    <div class="buttons">
+      <button class="big-btn" onclick="speakCurrent()">繰り返す</button>
+      <button class="big-btn" onclick="giveUp()">表示</button>
+    </div>
+
+    <div class="stats">
+      合計: <strong id="total">0</strong> | 
+      正解: <strong id="score">0</strong> | 
+      連続: <strong id="streak">0</strong>
+    </div>
+
+    <div class="history">
+      <strong>履歴:</strong>
+      <div id="historyList"></div>
+    </div>
+
+    <div class="attribution">
+      音声提供: 
+        <a href="https://responsivevoice.org" target="_blank" rel="nofollow" style="color: #888; text-decoration: underline;">ResponsiveVoice</a> 
+      (非商用ライセンス)
+    </div>
+
+  </div>
+
+  <!-- Settings Panel -->
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-header">
+      <h2>設定</h2>
+      <button class="close-btn" onclick="toggleSettings()">✕</button>
+    </div>
+
+    <select id="rangeSelect">
+      <option value="0-10">0 - 10</option>
+      <option value="0-100">0 - 100</option>
+      <option value="0-1000">0 - 1,000</option>
+      <option value="0-10000" selected>0 - 10,000</option>
+      <option value="10000-100000">10,000 - 100,000</option>
+      <option value="10000-1000000">10,000 - 1,000,000</option>
+      <option value="10000-10000000">10,000 - 10,000,000</option>
+      <option value="10000-1000000000">10,000 - 1,000,000,000</option>
+      <option value="custom">カスタム範囲</option>
+    </select>
+
+    <div id="customRange" style="display:none; margin:8px 0;">
+      <input type="number" id="min" value="0" style="width:48%"> -
+      <input type="number" id="max" value="100" style="width:48%">
+    </div>
+
+    <select id="voiceSelect">
+      <option value="random" selected>🎲 ランダム音声</option>
+      <option value="Japanese Female">🇯🇵 女性の声</option>
+      <option value="Japanese Male">🇯🇵 男性の声</option>
+    </select>
+
+    <div class="speed-control">
+      <div class="speed-label">
+        <span>速度</span>
+        <span id="speedValue">1.0x</span>
+      </div>
+      <input class="speed-input" type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1.0" style="width:100%;">
+    </div>
+  </div>
+
+  <script>
+    let currentNumber = 0;
+    let total = 0;
+    let score = 0;
+    let streak = 0;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playCorrectSound() {
+      const notes = [700, 900, 1100];
+      let time = audioCtx.currentTime;
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.25, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + 0.45);
+        time += 0.13;
+      });
+    }
+
+    function playIncorrectSound() {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(420, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    }
+
+    function numeroALetras(num) {
+      if (num === 0) return "ゼロ";
+      const units = ["", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"];
+      const teens = ["じゅう", "じゅういち", "じゅうに", "じゅうさん", "じゅうよん", "じゅうご", "じゅうろく", "じゅうなな", "じゅうはち", "じゅうきゅう"];
+      const tens = ["", "", "にじゅう", "さんじゅう", "よんじゅう", "ごじゅう", "ろくじゅう", "ななじゅう", "はちじゅう", "きゅうじゅう"];
+      const hundreds = ["", "ひゃく", "にひゃく", "さんびゃく", "よんひゃく", "ごひゃく", "ろっぴゃく", "ななひゃく", "はっぴゃく", "きゅうひゃく"];
+      const thousands = ["", "せん", "にせん", "さんぜん", "よんせん", "ごせん", "ろくせん", "ななせん", "はっせん", "きゅうせん"];
+
+      let str = "";
+      if (num >= 100000000) {
+        const oku = Math.floor(num / 100000000);
+        str += numeroALetras(oku) + " おく ";
+        num %= 100000000;
+      }
+      if (num >= 10000) {
+        const man = Math.floor(num / 10000);
+        str += numeroALetras(man) + " まん ";
+        num %= 10000;
+      }
+      if (num >= 1000) {
+        const thou = Math.floor(num / 1000);
+        str += thousands[thou];
+        num %= 1000;
+      }
+      if (num >= 100) {
+        const hun = Math.floor(num / 100);
+        str += hundreds[hun];
+        num %= 100;
+      }
+      if (num >= 20) {
+        const ten = Math.floor(num / 10);
+        str += tens[ten];
+        num %= 10;
+      } else if (num >= 10) {
+        str += teens[num - 10];
+        return str.trim();
+      }
+      if (num > 0) str += units[num];
+      return str.trim() || "ゼロ";
+    }
+
+    function speak(text) {
+      if (typeof responsiveVoice === "undefined") return;
+      const voiceSelect = document.getElementById('voiceSelect').value;
+      let voice = "Japanese Female";
+      if (voiceSelect === "random") voice = Math.random() > 0.5 ? "Japanese Female" : "Japanese Male";
+      else if (voiceSelect) voice = voiceSelect;
+      const rate = parseFloat(document.getElementById('speed').value);
+      responsiveVoice.speak(text, voice, { rate: rate, pitch: 1.0 });
+    }
+
+    function newNumber() {
+      let min = 0, max = 100;
+      const rangeVal = document.getElementById('rangeSelect').value;
+
+      if (rangeVal === 'custom') {
+        min = parseInt(document.getElementById('min').value) || 0;
+        max = parseInt(document.getElementById('max').value) || 100;
+      } else {
+        const [a, b] = rangeVal.split('-').map(Number);
+        min = a; max = b;
+      }
+
+      currentNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+      
+      resetInput();
+      speak(numeroALetras(currentNumber));
+      setTimeout(() => document.getElementById('input').focus(), 500);
+    }
+
+    function resetInput() {
+      const input = document.getElementById('input');
+      input.value = '';
+      input.style.color = '';
+    }
+
+    function speakCurrent() {
+      resetInput();
+      speak(numeroALetras(currentNumber));
+      setTimeout(() => document.getElementById('input').focus(), 300);
+    }
+
+    function checkAnswer() {
+      const inputEl = document.getElementById('input');
+      const input = parseInt(inputEl.value);
+      if (isNaN(input)) return;
+
+      total++;
+      document.getElementById('total').textContent = total;
+
+      if (input === currentNumber) {
+        score++;
+        streak++;
+        document.getElementById('score').textContent = score;
+        document.getElementById('streak').textContent = streak;
+        showResult(currentNumber, true);
+        playCorrectSound();
+        setTimeout(newNumber, 800);
+      } else {
+        streak = 0;
+        document.getElementById('streak').textContent = streak;
+        showResult(input, false);
+        playIncorrectSound();
+        setTimeout(speakCurrent, 700);
+      }
+    }
+
+    function giveUp() {
+      showResult(currentNumber, false);
+      streak = 0;
+      document.getElementById('streak').textContent = streak;
+      setTimeout(newNumber, 1200);
+    }
+
+    function showResult(num, isCorrect) {
+      const color = isCorrect ? '#34a853' : '#ea4335';
+      const list = document.getElementById('historyList');
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `<span style="color:${color}">${num}</span>`;
+      list.insertBefore(item, list.firstChild);
+    }
+
+    function toggleSettings() {
+      document.getElementById('settingsPanel').classList.toggle('open');
+    }
+
+    function saveSettings() {
+      localStorage.setItem('rangeSelect', document.getElementById('rangeSelect').value);
+      localStorage.setItem('voiceSelect', document.getElementById('voiceSelect').value);
+      localStorage.setItem('speed', document.getElementById('speed').value);
+    }
+
+    window.onload = () => {
+      if (localStorage.getItem('rangeSelect')) {
+        const savedRange = localStorage.getItem('rangeSelect');
+        document.getElementById('rangeSelect').value = savedRange;
+        if (savedRange === 'custom') {
+          document.getElementById('customRange').style.display = 'block';
+        }
+      }
+      if (localStorage.getItem('voiceSelect')) document.getElementById('voiceSelect').value = localStorage.getItem('voiceSelect');
+      if (localStorage.getItem('speed')) {
+        const s = localStorage.getItem('speed');
+        document.getElementById('speed').value = s;
+        document.getElementById('speedValue').textContent = s + 'x';
+      }
+
+      document.getElementById('rangeSelect').addEventListener('change', () => {
+        const isCustom = document.getElementById('rangeSelect').value === 'custom';
+        document.getElementById('customRange').style.display = isCustom ? 'block' : 'none';
+        saveSettings();
+        newNumber();
+      });
+
+      document.getElementById('voiceSelect').addEventListener('change', () => { saveSettings(); newNumber(); });
+      document.getElementById('speed').addEventListener('input', function() {
+        document.getElementById('speedValue').textContent = this.value + 'x';
+        saveSettings();
+      });
+
+      ['min','max'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          saveSettings();
+          newNumber();
+        });
+      });
+
+      setTimeout(newNumber, 800);
+    };
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</body>
+</html>
